@@ -1,38 +1,108 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const UserList = ({ userId, onSelect }) => {
   const [users, setUsers] = useState([]);
+  const [latestMessages, setLatestMessages] = useState([]);
+  const [hiddenUsers, setHiddenUsers] = useState([]); 
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('http://localhost:5050/api/user/online');
+      const filteredUsers = res.data.filter(
+        (u) => u._id !== userId && !hiddenUsers.includes(u._id)
+      );
+      setUsers(filteredUsers);
+    } catch (err) {
+      console.error('Failed to fetch users', err);
+    }
+  };
+
+  const fetchLatestMessages = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5050/api/message/latest/${userId}`);
+      setLatestMessages(res.data);
+    } catch (err) {
+      console.error('Failed to fetch latest messages', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const res = await axios.get("http://localhost:5050/api/user/online");
-      setUsers(res.data.filter(u => u._id !== userId));
-    };
     fetchUsers();
-    const interval = setInterval(fetchUsers, 5000);
+    fetchLatestMessages();
+    const interval = setInterval(() => {
+      fetchUsers();
+      fetchLatestMessages();
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, [userId]);
+  });
+
+  const markMessagesAsRead = async (otherUserId) => {
+    try {
+      await axios.put('http://localhost:5050/api/message/mark-read', {
+        userId,
+        otherUserId,
+      });
+      fetchLatestMessages();
+    } catch (err) {
+      console.error('Failed to mark messages as read', err);
+    }
+  };
+
+  const handleUserClick = (user) => {
+    onSelect(user);
+    markMessagesAsRead(user._id);
+  };
+
+  const handleHideUser = (userIdToHide, e) => {
+    e.stopPropagation();
+    setHiddenUsers((prev) => [...prev, userIdToHide]);
+  };
+
+  const getMessageData = (otherUserId) => {
+    return latestMessages.find((msg) => msg.userId === otherUserId);
+  };
 
   return (
-    <div className="bg-black rounded-xl shadow-lg p-6 max-w-md w-full">
-      <h3 className="text-2xl font-bold mb-4 text-violet-600 text-center">Online Users</h3>
-      <div className="space-y-3">
-        {users.length === 0 ? (
-          <p className="text-gray-500 text-center">No users online.</p>
-        ) : (
-          users.map(user => (
+    <div className="space-y-3">
+      {users.length === 0 ? (
+        <p className="text-gray-500 text-center">No users online.</p>
+      ) : (
+        users.map((user) => {
+          const msgData = getMessageData(user._id);
+          return (
             <div
               key={user._id}
-              onClick={() => onSelect(user)}
-              className="p-2 bg-violet-100 rounded-lg cursor-pointer hover:bg-violet-200 transition"
+              onClick={() => handleUserClick(user)}
+              className="p-3 bg-white hover:bg-gray-100 border rounded-lg cursor-pointer shadow-sm flex justify-between items-center transition duration-200"
             >
-              <p className="font-semibold text-gray-700">{user.name}</p>
-              <p className="text-sm text-gray-500">{user.phone}</p>
+              <div>
+                <p className="font-semibold text-gray-800">{user.name}</p>
+                {msgData && (
+                  <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                    {msgData.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                {msgData?.isUnread && (
+                  <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                    New
+                  </span>
+                )}
+                <button
+                  onClick={(e) => handleHideUser(user._id, e)}
+                  className="text-red-400 hover:text-red-700 text-sm p-3"
+                  title="Temporarily remove from view"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
-          ))
-        )}
-      </div>
+          );
+        })
+      )}
     </div>
   );
 };

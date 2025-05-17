@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaTrashAlt } from 'react-icons/fa';
-import MessageInput from './MessageInput';
 import axios from 'axios';
+import MessageInput from './MessageInput';
 
 const ChatBox = ({ senderId, receiver }) => {
   const [messages, setMessages] = useState([]);
@@ -15,11 +15,19 @@ const ChatBox = ({ senderId, receiver }) => {
           receiverId: receiver._id,
         },
       });
+      console.log('Messages received:', res.data);  
       setMessages(res.data || []);
     } catch (error) {
       console.error('Failed to load messages:', error);
     }
   };
+  useEffect(() => {
+    if (receiver) {
+      loadMessages();
+      const interval = setInterval(loadMessages, 5000);
+      return () => clearInterval(interval);
+    }
+  });
 
   const handleDeleteMessage = async (messageId) => {
     try {
@@ -30,36 +38,32 @@ const ChatBox = ({ senderId, receiver }) => {
     }
   };
 
-  useEffect(() => {
-    if (receiver) {
-      loadMessages();
-      const interval = setInterval(loadMessages, 3000);
-      return () => clearInterval(interval); 
-    }
-  });
+
 
   return (
-    <div className="flex flex-col bg-black rounded-xl shadow-lg p-6 max-w-2xl w-full">
-      <h3 className="text-2xl font-bold mb-4 text-violet-600 text-center">
-        Chat with {receiver?.name}
+    <div className="rounded-xl shadow-xl bg-white h-full max-w-2xl w-full flex flex-col">
+      <h3 className="text-2xl font-bold p-4 text-pink-600 text-center border-b">
+        Chat with {receiver?.name || 'Select a user'}
       </h3>
 
-      <div className="flex flex-col space-y-2 overflow-y-auto h-64 border rounded-lg p-4 bg-gray-50 mb-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {Array.isArray(messages) && messages.length > 0 ? (
           messages.map((m) => (
             <div
               key={m._id}
-              className={`relative max-w-xs p-2 rounded-lg ${
-                m.senderId === senderId
-                  ? 'self-end bg-violet-200 text-right'
-                  : 'self-start bg-gray-200 text-left'
+              className={`relative ${
+                m.sender === senderId ? 'text-right' : 'text-left'
               }`}
             >
-            
-              <div className="p-2">{m.message}</div>
+              <div
+                className={`inline-block p-4 rounded-lg ${
+                  m.sender === senderId ? 'bg-pink-100' : 'bg-gray-100'
+                }`}
+              >
+                {m.message}
+              </div>
 
-              
-              {m.senderId === senderId && (
+              {m.sender === senderId && (
                 <button
                   onClick={() => handleDeleteMessage(m._id)}
                   className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
@@ -71,11 +75,19 @@ const ChatBox = ({ senderId, receiver }) => {
             </div>
           ))
         ) : (
-          <div className="text-gray-500 text-center my-auto">No messages yet.</div>
+          <p className="text-gray-500 text-center">No messages yet.</p>
         )}
       </div>
 
-      <MessageInput senderId={senderId} receiverId={receiver?._id} onSend={loadMessages} />
+      <div className="border-t p-4">
+        {receiver && (
+          <MessageInput
+            senderId={senderId}
+            receiverId={receiver._id}
+            onSend={loadMessages}
+          />
+        )}
+      </div>
     </div>
   );
 };

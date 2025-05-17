@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import EmojiPicker from 'emoji-picker-react'; 
 
 const MessageInput = ({ senderId, receiverId, onSend }) => {
   const [text, setText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleSend = async () => {
     if (text.trim()) {
@@ -13,15 +15,20 @@ const MessageInput = ({ senderId, receiverId, onSend }) => {
           message: text,
         });
         setText('');
-        onSend();
+        onSend(); 
       } catch (error) {
         console.error('Failed to send message:', error);
       }
     }
   };
 
+  const handleEmojiClick = (emojiData) => {
+    console.log("Selected Emoji:", emojiData);
+    setText(prev => prev + emojiData.emoji);
+  };
+
   return (
-    <div className="flex gap-2 items-center">
+    <div className="relative flex gap-2 items-center">
       <input
         type="text"
         value={text}
@@ -31,10 +38,22 @@ const MessageInput = ({ senderId, receiverId, onSend }) => {
       />
       <button
         onClick={handleSend}
-        className="bg-violet-500 hover:bg-violet-600 text-white font-semibold px-6 py-2 rounded-full transition"
+        className="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2 rounded-full transition"
       >
         Send
       </button>
+      <button
+        onClick={() => setShowEmojiPicker(prev => !prev)}
+        className="text-2xl text-gray-600"
+      >
+        😀
+      </button>
+
+      {showEmojiPicker && (
+        <div className="absolute bottom-14 left-0 z-10">
+          <EmojiPicker onEmojiClick={handleEmojiClick} />
+        </div>
+      )}
     </div>
   );
 };

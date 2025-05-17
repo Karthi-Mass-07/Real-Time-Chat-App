@@ -15,7 +15,6 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     try {
       const response = await axios.post("http://localhost:5050/api/user/login", formData);
-      console.log(response.data);
       const userId = response.data.userId;
       localStorage.setItem('userId', userId);
       onLogin(userId);
@@ -24,40 +23,44 @@ const Login = ({ onLogin }) => {
       navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error("Register Failed..!");
+      toast.error("Login Failed. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center text-violet-600">Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-white to-pink-200 p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+        <h2 className="text-2xl font-semibold text-center text-pink-600 mb-2">ChatZone</h2>
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Login</h1>
+
         <form onSubmit={handleSubmit} className="space-y-5">
-          
           <div>
-            <label className="block mb-1 text-gray-700 font-medium">Phone:</label>
+            <label htmlFor="phone" className="block mb-1 text-gray-700 font-medium">
+              Phone:
+            </label>
             <input
               type="text"
+              id="phone"
               name="phone"
               value={formData.phone}
-              placeholder="Enter Your Phone"
+              placeholder="Enter your phone number"
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300"
           >
             Login
           </button>
 
-          <p className="text-center text-gray-600">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-violet-500 hover:underline">
-              Register here!
+          <p className="text-center text-sm text-gray-600">
+            Don’t have an account?{" "}
+            <Link to="/register" className="text-pink-500 hover:underline font-medium">
+              Register here
             </Link>
           </p>
         </form>

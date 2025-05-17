@@ -13,13 +13,15 @@ const Home = ({ userId }) => {
   };
 
   return (
-    <div className="p-6 min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-pink-200 p-4 flex flex-col">
+
+      <h1 className="text-3xl font-bold text-center text-pink-600 mb-6">ChatZone</h1>
       <div className="flex flex-col md:flex-row gap-6 flex-1">
-        <div className="w-full md:w-1/3 bg-white p-4 rounded-xl shadow-lg">
+        <div className="w-full md:w-1/3 bg-white p-4 rounded-xl shadow-xl h-[500px] overflow-y-auto">
           <UserList userId={userId} onSelect={setSelectedUser} />
         </div>
 
-        <div className="w-full md:w-2/3 bg-white p-4 rounded-xl shadow-lg flex flex-col">
+        <div className="w-full md:w-2/3 bg-white p-4 rounded-xl shadow-xl flex flex-col h-[500px]">
           {selectedUser ? (
             <ChatBox senderId={userId} receiver={selectedUser} />
           ) : (
@@ -29,7 +31,6 @@ const Home = ({ userId }) => {
           )}
         </div>
       </div>
-
       <div className="mt-6 flex justify-center">
         <button
           onClick={handleLogOut}
