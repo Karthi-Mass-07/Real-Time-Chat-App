@@ -79,6 +79,7 @@ const UserList = ({ userId, onSelect }) => {
             >
               <div>
                 <p className="font-semibold text-gray-800">{user.name}</p>
+                <p className=" text-gray-800">{user.phone}</p>
                 {msgData && (
                   <p className="text-sm text-gray-600 truncate max-w-[200px]">
                     {msgData.message}
